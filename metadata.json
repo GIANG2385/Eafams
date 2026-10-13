@@ -1,0 +1,6 @@
+{
+  "name": "eafams",
+  "description": "Education Account Financial & Administrative System (eafams) – comprehensive fee management, student accounts, and parent financial expense analytics.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

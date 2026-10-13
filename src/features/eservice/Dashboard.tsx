@@ -5,11 +5,12 @@ import { QueryState } from '../../components/StateView';
 import { Badge, Button, Card, Field } from '../../components/ui';
 import { formatSgd } from '../../domain/money';
 import type { NoAccountReason } from '../../domain/ea';
-import { listTransactions } from '../../services/parent';
+import { listCharges, listTransactions } from '../../services/parent';
 import type { TxnType } from '../../services/parent';
 import { useSession } from '../session/SessionProvider';
 import { useChild } from './ChildGuard';
 import { PbiChip } from '../../components/PbiChip';
+import { FinancialSummaryChart } from './FinancialSummaryChart';
 
 const REASON: Record<NoAccountReason, string> = {
   NOT_CITIZEN: 'This student is not a Singapore Citizen, so no Education Account is held. Fees are paid online.',
@@ -38,6 +39,11 @@ export function Dashboard() {
     queryKey: ['txns', guardian?.id, child.personId, page, from, to, type],
     queryFn: () => listTransactions(guardian!.id, child.personId, { page, from: from || undefined, to: to || undefined, type }),
     enabled: !!guardian && !!child.account,
+  });
+  const chargesQ = useQuery({
+    queryKey: ['charges', guardian?.id, child.personId],
+    queryFn: () => listCharges(guardian!.id, child.personId),
+    enabled: !!guardian,
   });
   const acc = child.account;
 
@@ -84,6 +90,20 @@ export function Dashboard() {
           </div>
         )}
       </Card>
+
+      {/* Financial Expenses Visual Summary with Recharts */}
+      {chargesQ.isLoading ? (
+        <section className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-xs">
+          <div className="h-5 w-52 bg-slate-200 animate-pulse rounded mb-4" />
+          <div className="h-44 w-full bg-slate-100 animate-pulse rounded" />
+        </section>
+      ) : chargesQ.data ? (
+        <FinancialSummaryChart
+          outstanding={chargesQ.data.outstanding}
+          paid={chargesQ.data.paid}
+          pending={chargesQ.data.pending}
+        />
+      ) : null}
 
       {/* Transactions History Card */}
       {acc && (
