@@ -1,43 +1,77 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Logo } from '../../components/Logo';
-import { Button, Card, Field } from '../../components/ui';
+import loginBg from '../../assets/login_bg.jpg';
 import { PERSONAS } from '../../mock-db/seed';
 import { signIn } from '../../services/auth';
 import { errorMessage } from '../../components/StateView';
 import { useSession } from '../session/SessionProvider';
 
-type RoleTab = 'parent' | 'school' | 'hq';
-
 export function SignInPage() {
   const navigate = useNavigate();
   const session = useSession();
-  const [activeTab, setActiveTab] = useState<RoleTab>('parent');
 
-  // Parent SingPass State
-  const [selectedPersona, setSelectedPersona] = useState<string>(PERSONAS[0]?.id ?? '');
+  // Form states matching screenshot
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+  const [staySignedIn, setStaySignedIn] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [forgotNotice, setForgotNotice] = useState(false);
+
+  // Singpass Modal & Auth State
+  const [showSingpassModal, setShowSingpassModal] = useState(false);
+  const [selectedPersona, setSelectedPersona] = useState<string>(PERSONAS[0]?.id ?? 'g-tan');
   const [singpassBusy, setSingpassBusy] = useState(false);
   const [singpassError, setSingpassError] = useState('');
 
-  // School Admin State
-  const schoolPersonas = session.adminPersonas.filter((p) => p.id.startsWith('school_'));
-  const [schoolUserId, setSchoolUserId] = useState<string>(schoolPersonas[0]?.id ?? 'school_raffles');
-  const [schoolPassword, setSchoolPassword] = useState('demo1234');
-  const [schoolError, setSchoolError] = useState('');
+  // Handle Form Sign In (User ID & Password)
+  const handleSignIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError('');
 
-  // HQ Admin State
-  const [hqUserId, setHqUserId] = useState('hq');
-  const [hqPassword, setHqPassword] = useState('demo1234');
-  const [hqError, setHqError] = useState('');
+    const trimmedId = userId.trim().toLowerCase();
+    const trimmedPw = password.trim();
 
-  // Handle Parent SingPass Sign In
-  const handleParentSingPass = async () => {
+    if (!trimmedId) {
+      setFormError('Please enter your User ID.');
+      return;
+    }
+    if (!trimmedPw) {
+      setFormError('Please enter your password.');
+      return;
+    }
+
+    // Role detection based on user ID:
+    if (trimmedId === 'hq' || trimmedId.startsWith('hq_')) {
+      session.setAdminId('hq');
+      navigate('/admin/schools');
+      return;
+    }
+
+    if (trimmedId.includes('school') || trimmedId.includes('raffles') || trimmedId.includes('victoria') || trimmedId.includes('peihwa')) {
+      // Find matching school admin persona or default to school_raffles
+      const matched = session.adminPersonas.find(
+        (p) => p.id.toLowerCase() === trimmedId || p.label.toLowerCase().includes(trimmedId)
+      );
+      session.setAdminId(matched?.id ?? 'school_raffles');
+      navigate('/admin/schools');
+      return;
+    }
+
+    // Default fallback admin login
+    session.setAdminId(trimmedId);
+    navigate('/admin/schools');
+  };
+
+  // Handle Singpass Parent Login
+  const handleSingpassLogin = async () => {
     if (!selectedPersona) return;
     setSingpassBusy(true);
     setSingpassError('');
     try {
       const res = await signIn(selectedPersona);
       session.setGuardian({ id: res.guardianId, name: res.displayName });
+      setShowSingpassModal(false);
       navigate('/eservice/children');
     } catch (e) {
       setSingpassError(errorMessage(e));
@@ -46,445 +80,299 @@ export function SignInPage() {
     }
   };
 
-  // Handle School Admin Sign In
-  const handleSchoolSignIn = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSchoolError('');
-    if (!schoolUserId.trim()) {
-      setSchoolError('Please enter a valid School User ID.');
-      return;
-    }
-    if (!schoolPassword.trim()) {
-      setSchoolError('Please enter your password.');
-      return;
-    }
-    session.setAdminId(schoolUserId);
-    navigate('/admin/schools');
-  };
-
-  // Handle HQ Officer Sign In
-  const handleHqSignIn = (e: React.FormEvent) => {
-    e.preventDefault();
-    setHqError('');
-    if (!hqUserId.trim()) {
-      setHqError('Please enter HQ User ID.');
-      return;
-    }
-    if (!hqPassword.trim()) {
-      setHqError('Please enter your password.');
-      return;
-    }
-    session.setAdminId(hqUserId);
-    navigate('/admin/schools');
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
-      {/* Top Header */}
-      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-40">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-          <Link to="/" className="hover:opacity-95 transition-opacity">
-            <Logo size="sm" showSubtitle={false} />
+    <div className="relative min-h-screen w-full overflow-hidden bg-slate-900 flex">
+      {/* Background Graphic: Swirling 3D Blue Ribbon Visual */}
+      <img
+        src={loginBg}
+        alt="Background Graphic"
+        className="absolute inset-0 h-full w-full object-cover object-right pointer-events-none select-none z-0"
+      />
+
+      {/* Brand Logo in Upper Right matching screenshot */}
+      <div className="absolute top-6 right-6 sm:top-8 sm:right-12 z-20 pointer-events-auto">
+        <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 font-sans select-none drop-shadow-xs">
+          MaivenPoint
+        </span>
+      </div>
+
+      {/* Left Column: Frosted Glass Sign In Panel */}
+      <div className="relative z-10 w-full sm:max-w-lg lg:w-[42%] min-h-screen bg-gradient-to-r from-[#d9e6fc]/95 via-[#dfecfc]/90 to-[#e2effc]/60 backdrop-blur-xl border-r border-white/50 px-6 py-10 sm:px-12 sm:py-16 flex flex-col justify-between shadow-2xl">
+        {/* Top: Back Link */}
+        <div>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors mb-8 cursor-pointer"
+          >
+            <span>←</span>
+            <span>Back to Home</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors"
-            >
-              <span>←</span>
-              <span>Back to Landing</span>
-            </Link>
+
+          {/* Title: Sign in */}
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-8">
+            Sign in
+          </h1>
+
+          {/* Action 1: Singpass Button (Thay "sign in with Microsoft" thành "Singpass") */}
+          <button
+            type="button"
+            onClick={() => setShowSingpassModal(true)}
+            aria-label="Singpass"
+            className="w-full flex items-center justify-center gap-3 rounded-md border border-slate-300 bg-white py-2.5 px-4 text-sm font-semibold text-slate-800 shadow-2xs hover:bg-slate-50 hover:border-slate-400 active:scale-[0.99] transition-all cursor-pointer"
+          >
+            {/* Singpass Red Emblem */}
+            <span className="flex h-5 w-5 items-center justify-center rounded-sm bg-[#E11933] text-white text-[10px] font-black tracking-tighter">
+              sp
+            </span>
+            <span>Singpass</span>
+          </button>
+
+          {/* Divider: or */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-300" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-[#e0edfc] px-3 text-slate-500 font-medium">or</span>
+            </div>
           </div>
-        </div>
-      </header>
 
-      {/* Main Split-Screen Container */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 flex-1 w-full flex items-center">
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 w-full items-start">
-          {/* Left Column: Interactive Role Selection & Login Forms */}
-          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-10 shadow-sm">
-            {/* Header copy */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
-                  Role Authentication
-                </span>
-                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-500">
-                  Sprint 1 Prototype
-                </span>
+          {/* Form */}
+          <form onSubmit={handleSignIn} className="space-y-4">
+            {formError && (
+              <div className="rounded-md border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-700">
+                {formError}
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-                Sign in to eafams
-              </h1>
-              <p className="mt-1.5 text-xs sm:text-sm text-slate-500 max-w-xl">
-                Select your designated role to log in with SingPass or your staff credentials.
-              </p>
-            </div>
-
-            {/* Role Selection Tabs */}
-            <div className="mb-6 grid grid-cols-3 gap-2 rounded-xl bg-slate-100 p-1.5 border border-slate-200/80">
-              <button
-                type="button"
-                onClick={() => setActiveTab('parent')}
-                className={`flex flex-col items-center justify-center rounded-lg py-2.5 px-2 text-xs font-semibold transition-all cursor-pointer ${
-                  activeTab === 'parent'
-                    ? 'bg-white text-blue-700 shadow-xs font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>Parent / Guardian</span>
-                <span className="text-[10px] font-normal opacity-80 mt-0.5">SingPass Login</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('school')}
-                className={`flex flex-col items-center justify-center rounded-lg py-2.5 px-2 text-xs font-semibold transition-all cursor-pointer ${
-                  activeTab === 'school'
-                    ? 'bg-white text-blue-700 shadow-xs font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>School Admin</span>
-                <span className="text-[10px] font-normal opacity-80 mt-0.5">User ID &amp; Password</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('hq')}
-                className={`flex flex-col items-center justify-center rounded-lg py-2.5 px-2 text-xs font-semibold transition-all cursor-pointer ${
-                  activeTab === 'hq'
-                    ? 'bg-white text-blue-700 shadow-xs font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>Ministry HQ</span>
-                <span className="text-[10px] font-normal opacity-80 mt-0.5">User ID &amp; Password</span>
-              </button>
-            </div>
-
-            {/* Tab 1: Parent Sign In via SingPass */}
-            {activeTab === 'parent' && (
-              <Card title="SingPass Login for Parents">
-                <div className="space-y-4">
-                  <div className="rounded-xl border border-red-100 bg-red-50/70 p-4 flex items-start gap-3.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-600 text-white font-bold text-xs tracking-tighter shadow-xs">
-                      sing<br />pass
-                    </div>
-                    <div className="text-xs">
-                      <span className="font-bold text-red-950 block">National Digital Identity (SingPass)</span>
-                      <span className="text-slate-600 mt-0.5 block leading-relaxed">
-                        Parents authenticate securely with SingPass to view linked children's Education Accounts and approve fee deductions.
-                      </span>
-                    </div>
-                  </div>
-
-                  {singpassError && (
-                    <div role="alert" className="rounded-lg bg-rose-50 p-3 text-xs text-rose-700 border border-rose-200">
-                      {singpassError}
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                      Choose a Parent Persona (Demo Identity)
-                    </label>
-                    <div className="space-y-2">
-                      {PERSONAS.map((p) => {
-                        const isSelected = selectedPersona === p.id;
-                        return (
-                          <label
-                            key={p.id}
-                            className={`flex items-center justify-between rounded-xl border p-3 cursor-pointer transition-all ${
-                              isSelected
-                                ? 'border-blue-600 bg-blue-50/50 shadow-2xs'
-                                : 'border-slate-200 bg-white hover:border-slate-300'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="radio"
-                                name="persona"
-                                value={p.id}
-                                checked={isSelected}
-                                onChange={() => setSelectedPersona(p.id)}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                              />
-                              <div>
-                                <div className="text-xs font-bold text-slate-900">{p.displayName}</div>
-                                <div className="text-[11px] text-slate-500">
-                                  NRIC: {p.nric} • {p.profile.email}
-                                </div>
-                              </div>
-                            </div>
-                            <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-mono text-slate-600">
-                              {p.nric}
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="pt-2">
-                    <Button
-                      variant="primary"
-                      className="w-full justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-3 shadow-sm rounded-xl cursor-pointer"
-                      disabled={!selectedPersona || singpassBusy}
-                      onClick={() => void handleParentSingPass()}
-                    >
-                      {singpassBusy ? 'Verifying SingPass…' : 'Log in with SingPass'}
-                    </Button>
-                    <p className="mt-2 text-center text-[11px] text-slate-400">
-                      Fictional mock identity with simulated SingPass verification.
-                    </p>
-                  </div>
-                </div>
-              </Card>
             )}
 
-            {/* Tab 2: School Administrator Sign In via User ID & Password */}
-            {activeTab === 'school' && (
-              <Card title="School Administrator Sign In">
-                <form onSubmit={handleSchoolSignIn} className="space-y-4">
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 flex items-start gap-3.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-white font-bold text-xs shadow-xs">
-                      SCH
-                    </div>
-                    <div className="text-xs">
-                      <span className="font-bold text-slate-900 block">School Staff Portal</span>
-                      <span className="text-slate-600 mt-0.5 block leading-relaxed">
-                        Sign in with your institutional Staff ID and password to access student cohorts, classes, and fee batches.
-                      </span>
-                    </div>
-                  </div>
+            {/* User ID Field */}
+            <div>
+              <label htmlFor="userId" className="block text-xs font-semibold text-slate-800 mb-1.5">
+                User ID
+              </label>
+              <input
+                id="userId"
+                name="userId"
+                type="text"
+                placeholder="User ID"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                className="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+              />
+            </div>
 
-                  {schoolError && (
-                    <div role="alert" className="rounded-lg bg-rose-50 p-3 text-xs text-rose-700 border border-rose-200">
-                      {schoolError}
-                    </div>
+            {/* Password Field */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="password" className="block text-xs font-semibold text-slate-800">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setForgotNotice(true)}
+                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                >
+                  Forgot password?
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2.5 pr-10 text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  {showPassword ? (
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                    </svg>
+                  ) : (
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
                   )}
+                </button>
+              </div>
+            </div>
 
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                        Select Demo School Account
-                      </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        {schoolPersonas.map((sp) => (
-                          <button
-                            key={sp.id}
-                            type="button"
-                            onClick={() => setSchoolUserId(sp.id)}
-                            className={`text-left rounded-lg border p-2.5 text-xs transition-all cursor-pointer ${
-                              schoolUserId === sp.id
-                                ? 'border-blue-600 bg-blue-50/70 font-semibold text-blue-900'
-                                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                            }`}
-                          >
-                            <div className="font-bold text-slate-900 truncate">{sp.label.replace('School Admin - ', '')}</div>
-                            <div className="font-mono text-[10px] text-slate-500 mt-0.5">{sp.id}</div>
-                          </button>
-                        ))}
+            {/* Checkbox: Stay signed in for the next 14 days */}
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                id="staySignedIn"
+                type="checkbox"
+                checked={staySignedIn}
+                onChange={(e) => setStaySignedIn(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+              />
+              <label htmlFor="staySignedIn" className="text-xs text-slate-700 cursor-pointer select-none">
+                Stay signed in for the next 14 days
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="mt-6 w-full rounded-md bg-[#5C6BC0] hover:bg-[#4F5BB6] active:scale-[0.99] text-white py-2.5 px-4 text-sm font-semibold shadow-xs transition-all cursor-pointer"
+            >
+              Sign in
+            </button>
+          </form>
+
+          {/* Forgot password notice dialog */}
+          {forgotNotice && (
+            <div className="mt-4 rounded-md border border-blue-200 bg-blue-50/90 p-3 text-xs text-blue-800 flex items-start justify-between">
+              <div>
+                <p className="font-semibold">Demo Prototype Notice</p>
+                <p className="mt-0.5 text-blue-700">
+                  All demo accounts use password: <code className="font-mono font-bold">demo1234</code>.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setForgotNotice(false)}
+                className="text-blue-500 hover:text-blue-800 ml-2 font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Demo Quick-fill Helper */}
+        <div className="mt-8 pt-4 border-t border-slate-300/70">
+          <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
+            Demo quick accounts
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setUserId('school_raffles');
+                setPassword('demo1234');
+              }}
+              className="rounded-md border border-slate-300 bg-white/90 px-2.5 py-1 text-slate-700 hover:bg-white text-[11px] font-medium transition-colors shadow-2xs cursor-pointer"
+            >
+              🏫 School Admin (Raffles)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setUserId('hq');
+                setPassword('demo1234');
+              }}
+              className="rounded-md border border-slate-300 bg-white/90 px-2.5 py-1 text-slate-700 hover:bg-white text-[11px] font-medium transition-colors shadow-2xs cursor-pointer"
+            >
+              🏛️ Ministry HQ (hq)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Singpass Citizen Login Modal */}
+      {showSingpassModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E11933] text-white font-black text-xs">
+                  sp
+                </span>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Singpass Verification</h3>
+                  <p className="text-xs text-slate-500">Parent / Guardian Authentication</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSingpassModal(false)}
+                className="rounded-lg p-1 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {singpassError && (
+              <div className="mt-4 rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-700">
+                {singpassError}
+              </div>
+            )}
+
+            {/* Select Parent Citizen Persona */}
+            <div className="mt-4">
+              <label className="block text-xs font-semibold text-slate-700 mb-2">
+                Select citizen identity for Singpass session:
+              </label>
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {PERSONAS.map((p) => (
+                  <label
+                    key={p.id}
+                    className={`flex items-center justify-between p-3 rounded-xl border text-xs cursor-pointer transition-all ${
+                      selectedPersona === p.id
+                        ? 'border-red-500 bg-red-50/50 shadow-2xs'
+                        : 'border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="persona"
+                        value={p.id}
+                        checked={selectedPersona === p.id}
+                        onChange={() => setSelectedPersona(p.id)}
+                        className="text-red-600 focus:ring-red-500 h-4 w-4"
+                      />
+                      <div>
+                        <div className="font-semibold text-slate-900">{p.displayName}</div>
+                        <div className="text-[11px] text-slate-500">{p.nric}</div>
                       </div>
                     </div>
-
-                    <Field
-                      id="school-userid"
-                      label="User ID"
-                      value={schoolUserId}
-                      onChange={(e) => setSchoolUserId(e.target.value)}
-                      placeholder="e.g. school_raffles"
-                    />
-
-                    <Field
-                      id="school-password"
-                      label="Password"
-                      type="password"
-                      value={schoolPassword}
-                      onChange={(e) => setSchoolPassword(e.target.value)}
-                      placeholder="Enter password"
-                    />
-                  </div>
-
-                  <div className="pt-2">
-                    <Button
-                      variant="primary"
-                      type="submit"
-                      className="w-full justify-center py-3 font-bold rounded-xl cursor-pointer"
-                    >
-                      Sign In as School Admin
-                    </Button>
-                    <p className="mt-2 text-center text-[11px] text-slate-400">
-                      Default password for prototype demo: any character or demo1234.
-                    </p>
-                  </div>
-                </form>
-              </Card>
-            )}
-
-            {/* Tab 3: Ministry HQ Officer Sign In via User ID & Password */}
-            {activeTab === 'hq' && (
-              <Card title="Ministry of Education HQ Sign In">
-                <form onSubmit={handleHqSignIn} className="space-y-4">
-                  <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4 flex items-start gap-3.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-700 text-white font-bold text-xs shadow-xs">
-                      HQ
-                    </div>
-                    <div className="text-xs">
-                      <span className="font-bold text-blue-950 block">Ministry HQ Officer Access</span>
-                      <span className="text-slate-600 mt-0.5 block leading-relaxed">
-                        Full administrative authority for fee component models, student dataset imports, and cross-school financial audits.
-                      </span>
-                    </div>
-                  </div>
-
-                  {hqError && (
-                    <div role="alert" className="rounded-lg bg-rose-50 p-3 text-xs text-rose-700 border border-rose-200">
-                      {hqError}
-                    </div>
-                  )}
-
-                  <div className="space-y-3">
-                    <Field
-                      id="hq-userid"
-                      label="HQ User ID"
-                      value={hqUserId}
-                      onChange={(e) => setHqUserId(e.target.value)}
-                      placeholder="hq"
-                    />
-
-                    <Field
-                      id="hq-password"
-                      label="Password"
-                      type="password"
-                      value={hqPassword}
-                      onChange={(e) => setHqPassword(e.target.value)}
-                      placeholder="Enter password"
-                    />
-                  </div>
-
-                  <div className="pt-2">
-                    <Button
-                      variant="primary"
-                      type="submit"
-                      className="w-full justify-center bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl cursor-pointer"
-                    >
-                      Sign In as Ministry HQ
-                    </Button>
-                    <p className="mt-2 text-center text-[11px] text-slate-400">
-                      Default prototype credential: User ID: hq, Password: demo1234.
-                    </p>
-                  </div>
-                </form>
-              </Card>
-            )}
-
-            {/* Direct Portal Links */}
-            <div className="mt-8 pt-6 border-t border-slate-200 flex flex-wrap items-center justify-between text-xs text-slate-500 gap-2">
-              <span>Looking for direct portal access?</span>
-              <div className="flex items-center gap-4">
-                <Link to="/eservice/login" className="font-semibold text-blue-600 hover:text-blue-800">
-                  e-Service Portal
-                </Link>
-                <span className="text-slate-300">•</span>
-                <Link to="/admin" className="font-semibold text-blue-600 hover:text-blue-800">
-                  Admin Portal
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Branded Presentation Card matching screenshot structure */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 rounded-2xl p-6 sm:p-10 text-white flex flex-col justify-between shadow-xl">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-[11px] font-semibold text-blue-300 mb-6">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-                <span>UNIFIED PORTAL ACCESS</span>
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-snug">
-                One system for tuition, subsidies &amp; school fees
-              </h2>
-
-              <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Connect seamlessly into Singapore&apos;s Education Account financial ecosystem with integrated identity and live payment ledger.
-              </p>
-
-              {/* Feature Highlights List */}
-              <div className="mt-8 space-y-4">
-                <div className="flex items-start gap-3.5 rounded-xl bg-white/5 p-3.5 border border-white/10 backdrop-blur-xs">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-600/80 text-white text-sm">
-                    🛡️
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-white">SingPass Identity for Parents</h3>
-                    <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
-                      Instant single sign-on with automatic child record association and safe ledger authorization.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3.5 rounded-xl bg-white/5 p-3.5 border border-white/10 backdrop-blur-xs">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600/80 text-white text-sm">
-                    💰
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-white">Automated Subsidies &amp; Grants</h3>
-                    <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
-                      Instant calculation of citizen subsidies with transparent expense breakdowns via Recharts.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3.5 rounded-xl bg-white/5 p-3.5 border border-white/10 backdrop-blur-xs">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600/80 text-white text-sm">
-                    🏫
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-white">Institutional School Batching</h3>
-                    <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
-                      Class cohorts and school administrators schedule and publish fee cycles in clicks.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3.5 rounded-xl bg-white/5 p-3.5 border border-white/10 backdrop-blur-xs">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-600/80 text-white text-sm">
-                    🏛️
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-white">Ministry HQ Policy Governance</h3>
-                    <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
-                      Configure nationwide fee components, run data ingestion, and monitor central ledgers.
-                    </p>
-                  </div>
-                </div>
+                    <span className="font-mono text-[10px] text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">
+                      NRIC Verified
+                    </span>
+                  </label>
+                ))}
               </div>
             </div>
 
-            {/* Prototype Notice */}
-            <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
-              <span>Sprint 1 Sandbox</span>
-              <span>Prototype with fictional data</span>
+            {/* Modal Actions */}
+            <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowSingpassModal(false)}
+                className="rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSingpassLogin}
+                disabled={singpassBusy}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#E11933] hover:bg-[#C9132A] px-5 py-2 text-xs font-bold text-white shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              >
+                {singpassBusy ? (
+                  <span>Authenticating...</span>
+                ) : (
+                  <>
+                    <span>Log in with Singpass</span>
+                    <span>→</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Logo size="sm" showSubtitle={false} />
-            <span className="text-slate-400">|</span>
-            <span className="font-semibold text-slate-600">eafams</span>
-          </div>
-          <div>
-            Prototype with fictional data. No real accounts or payments.
-          </div>
-        </div>
-      </footer>
+      )}
     </div>
   );
 }

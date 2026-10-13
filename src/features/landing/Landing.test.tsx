@@ -23,8 +23,8 @@ test('Landing page renders hero section with requested copy and actions', () => 
   const signInBtn = screen.getByRole('link', { name: /^sign in$/i });
   expect(signInBtn).toHaveAttribute('href', '/signin');
 
-  // 4. Nút phụ: See how it works
-  expect(screen.getByRole('button', { name: /see how it works/i })).toBeInTheDocument();
+  // 4. See how it works đã được gỡ bỏ
+  expect(screen.queryByRole('button', { name: /see how it works/i })).not.toBeInTheDocument();
 
   // 5. Dòng nhỏ dưới nút
   expect(
@@ -32,24 +32,32 @@ test('Landing page renders hero section with requested copy and actions', () => 
   ).toBeGreaterThan(0);
 });
 
-test('Sign In page allows role switching between Parent (SingPass), School Admin and HQ', async () => {
+test('Sign In page matches MaivenPoint layout with Singpass button, User ID, and Password', async () => {
   const user = userEvent.setup();
   renderApp('/signin');
 
-  expect(screen.getByRole('heading', { name: /sign in to eafams/i })).toBeInTheDocument();
+  // 1. Heading "Sign in"
+  expect(screen.getByRole('heading', { name: /^sign in$/i })).toBeInTheDocument();
 
-  // Parent tab shows SingPass
-  expect(screen.getByRole('heading', { name: /singpass login for parents/i })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /log in with singpass/i })).toBeInTheDocument();
+  // 2. Brand MaivenPoint
+  expect(screen.getByText(/MaivenPoint/i)).toBeInTheDocument();
 
-  // Switch to School Admin
-  await user.click(screen.getByRole('button', { name: /school admin/i }));
-  expect(screen.getByRole('heading', { name: /school administrator sign in/i })).toBeInTheDocument();
+  // 3. Singpass button (replaces Sign in with Microsoft)
+  const singpassBtn = screen.getByRole('button', { name: /singpass/i });
+  expect(singpassBtn).toBeInTheDocument();
+
+  // 4. User ID & Password inputs
   expect(screen.getByLabelText(/user id/i)).toBeInTheDocument();
-  expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/^password/i)).toBeInTheDocument();
 
-  // Switch to Ministry HQ
-  await user.click(screen.getByRole('button', { name: /ministry hq/i }));
-  expect(screen.getByRole('heading', { name: /ministry of education hq sign in/i })).toBeInTheDocument();
-  expect(screen.getByLabelText(/hq user id/i)).toBeInTheDocument();
+  // 5. Checkbox "Stay signed in for the next 14 days"
+  expect(screen.getByLabelText(/stay signed in for the next 14 days/i)).toBeInTheDocument();
+
+  // 6. Primary submit "Sign in" button
+  expect(screen.getByRole('button', { name: /^sign in$/i })).toBeInTheDocument();
+
+  // 7. Clicking Singpass opens persona verification modal
+  await user.click(singpassBtn);
+  expect(screen.getByText(/singpass verification/i)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /log in with singpass/i })).toBeInTheDocument();
 });
