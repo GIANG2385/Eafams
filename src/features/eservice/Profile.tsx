@@ -76,9 +76,6 @@ export function Profile() {
               </dl>
             </Card>
             <Card title="Contact details">
-              <p className="mb-2 text-xs text-slate-600">
-                Prototype note: in production the residential address would be read-only (from the national identity source).
-              </p>
               {form && (
                 <form className="grid gap-3 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); void save(); }}>
                   {FIELDS.map((f) => (
@@ -99,14 +96,28 @@ export function Profile() {
       <Card title="Change history">
         <QueryState query={history} isEmpty={(d) => d.length === 0} emptyText="No changes yet.">
           {(rows) => (
-            <table aria-label="Change history" className="w-full text-sm">
-              <thead><tr className="text-left text-slate-600"><th>Date</th><th>Field</th><th>Old value</th><th>New value</th></tr></thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.id} className="border-t border-slate-100"><td>{r.at}</td><td>{LABELS[r.field as keyof ProfileInput] ?? r.field}</td><td>{r.oldValue}</td><td>{r.newValue}</td></tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto rounded-lg border border-slate-200">
+              <table aria-label="Change history" className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-200">
+                    <th className="py-2.5 px-3">Date</th>
+                    <th className="py-2.5 px-3">Field</th>
+                    <th className="py-2.5 px-3">Old value</th>
+                    <th className="py-2.5 px-3">New value</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {rows.map((r) => (
+                    <tr key={r.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-2.5 px-3 text-slate-500 whitespace-nowrap text-xs">{r.at}</td>
+                      <td className="py-2.5 px-3 font-medium text-slate-800">{LABELS[r.field as keyof ProfileInput] ?? r.field}</td>
+                      <td className="py-2.5 px-3 text-slate-500 line-through text-xs">{r.oldValue}</td>
+                      <td className="py-2.5 px-3 text-slate-900 font-medium text-xs">{r.newValue}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </QueryState>
       </Card>

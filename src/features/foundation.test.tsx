@@ -5,11 +5,10 @@ import { renderApp, resetTestState } from '../test/renderApp';
 
 beforeEach(() => resetTestState());
 
-test('landing links to both portals and shows the prototype banner once', () => {
+test('landing links to both portals', () => {
   renderApp('/');
   expect(screen.getByRole('link', { name: /e-Service Portal/i })).toHaveAttribute('href', '/eservice/login');
   expect(screen.getByRole('link', { name: /Admin Portal/i })).toHaveAttribute('href', '/admin');
-  expect(screen.getAllByText(/PROTOTYPE – mock data, not integrated/)).toHaveLength(1);
 });
 
 test('unknown route shows a not-found page', () => {

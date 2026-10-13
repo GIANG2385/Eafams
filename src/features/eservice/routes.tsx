@@ -1,5 +1,5 @@
 import { Link, Navigate, Outlet, Route, useLocation } from 'react-router-dom';
-import { IntegrationBadges } from '../../components/Shell';
+import { Logo } from '../../components/Logo';
 import { Button } from '../../components/ui';
 import { useSession } from '../session/SessionProvider';
 import { Login } from './Login';
@@ -18,36 +18,70 @@ const LATER = ['Top-up (Sprint 2)', 'FAS application (Sprint 3)', 'Application s
 function EserviceLayout() {
   const { guardian, setGuardian } = useSession();
   const loc = useLocation();
-  if (!guardian && !loc.pathname.endsWith('/login')) return <Navigate to="/eservice/login" replace />;
+
+  if (!guardian && !loc.pathname.endsWith('/login')) {
+    return <Navigate to="/eservice/login" replace />;
+  }
+
   return (
-    <div className="mx-auto max-w-4xl space-y-4 p-4">
-      <header className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <Link to="/eservice/children" className="text-lg font-semibold">
-            e-Service Portal
-          </Link>
-          <IntegrationBadges items={['SingPass (mock)']} />
-        </div>
-        {guardian && (
-          <div className="flex items-center gap-3 text-sm">
-            <span>{guardian.name}</span>
-            <Link className="underline" to="/eservice/profile">
-              Profile
+    <div className="mx-auto max-w-4xl space-y-5 p-4 sm:p-6">
+      {/* Top Header */}
+      <header className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3.5">
+            <Link to="/" title="eafams home" className="hover:opacity-90 transition-opacity">
+              <Logo size="sm" showSubtitle={false} />
             </Link>
-            <Button variant="secondary" onClick={() => setGuardian(null)}>
-              Sign out
-            </Button>
+            <div className="h-7 w-px bg-slate-200" />
+            <div>
+              <Link
+                to="/eservice/children"
+                className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 hover:text-blue-600 transition-colors leading-none block"
+              >
+                e-Service Portal
+              </Link>
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Citizen Services</span>
+            </div>
+          </div>
+
+          {guardian && (
+            <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-2 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-2xs">
+                  {guardian.name.charAt(0)}
+                </div>
+                <span className="font-semibold text-slate-800 text-xs sm:text-sm">{guardian.name}</span>
+              </div>
+              <span className="text-slate-300">|</span>
+              <Link
+                className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                to="/eservice/profile"
+              >
+                Profile
+              </Link>
+              <Button variant="secondary" className="text-xs px-2.5 py-1" onClick={() => setGuardian(null)}>
+                Sign out
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {guardian && (
+          <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-3 text-xs text-slate-400">
+            {LATER.map((l) => (
+              <span key={l} aria-disabled="true" className="cursor-not-allowed">
+                {l}
+              </span>
+            ))}
           </div>
         )}
       </header>
-      {guardian && (
-        <ul aria-label="Not in this prototype" className="flex flex-wrap gap-3 border-b border-slate-200 pb-2 text-sm">
-          {LATER.map((l) => (
-            <li key={l} aria-disabled="true" className="cursor-not-allowed text-slate-400">{l}</li>
-          ))}
-        </ul>
-      )}
-      <Outlet />
+
+      {/* Main Outlet */}
+      <main className="space-y-4">
+        <Outlet />
+      </main>
+
       {guardian && <Assistant />}
     </div>
   );

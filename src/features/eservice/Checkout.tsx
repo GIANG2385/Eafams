@@ -50,8 +50,12 @@ export function Checkout() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Pay fees for {child.name}</h1>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Pay fees for {child.name}</h1>
+        <p className="text-xs text-slate-500 font-medium">Checkout and settlement</p>
+      </div>
       <PbiChip code="PB-10" check="pay once; balance and fee update together" />
+
       <QueryState query={q}>
         {(info) => {
           const eaNote =
@@ -62,67 +66,117 @@ export function Checkout() {
                 : info.eligibility.reason === 'ACCOUNT_CLOSED'
                   ? 'This account is closed'
                   : `Not enough balance (${formatSgd(info.balanceCents ?? 0)} available)`;
+
           return (
             <>
               <Card title="Fees to pay">
-                <ul className="text-sm">
+                <ul className="divide-y divide-slate-100 text-sm">
                   {info.charges.map((c) => (
-                    <li key={c.id} className="flex justify-between">
-                      <span>{c.feeTypeName}</span>
-                      <span>{formatSgd(c.totalCents)}</span>
+                    <li key={c.id} className="flex justify-between py-2 text-slate-700">
+                      <span className="font-medium text-slate-800">{c.feeTypeName}</span>
+                      <span className="font-semibold tabular-nums text-slate-900">{formatSgd(c.totalCents)}</span>
                     </li>
                   ))}
                 </ul>
-                <p className="mt-2 border-t pt-2 text-right font-semibold">Total {formatSgd(info.totalCents)}</p>
+                <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3">
+                  <span className="font-semibold text-slate-700">Total payable</span>
+                  <span className="text-lg font-bold tabular-nums text-slate-900">{formatSgd(info.totalCents)}</span>
+                </div>
               </Card>
+
               {!review ? (
                 <Card title="Choose payment method">
-                  <fieldset className="space-y-2">
+                  <fieldset className="space-y-3">
                     <legend className="sr-only">Payment method</legend>
-                    <label className="flex items-start gap-2">
-                      <input type="radio" name="method" disabled={!info.eligibility.allowed} checked={method === 'EA'} onChange={() => setMethod('EA')} />
-                      <span>
-                        Education Account <span className="text-sm text-slate-600">({eaNote})</span>
-                      </span>
+                    <label
+                      className={`flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition-all ${
+                        !info.eligibility.allowed
+                          ? 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed'
+                          : method === 'EA'
+                            ? 'border-blue-600 bg-blue-50/50 shadow-2xs'
+                            : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="method"
+                        disabled={!info.eligibility.allowed}
+                        checked={method === 'EA'}
+                        onChange={() => setMethod('EA')}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div>
+                        <span className="font-bold text-sm text-slate-900 block">Education Account</span>
+                        <span className="text-xs text-slate-500">Government subsidised account ({eaNote})</span>
+                      </div>
                     </label>
-                    <label className="flex items-start gap-2">
-                      <input type="radio" name="method" checked={method === 'ONLINE'} onChange={() => setMethod('ONLINE')} />
-                      <span>Online payment <span className="text-sm text-slate-600">(sandbox)</span></span>
+
+                    <label
+                      className={`flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition-all ${
+                        method === 'ONLINE'
+                          ? 'border-blue-600 bg-blue-50/50 shadow-2xs'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="method"
+                        checked={method === 'ONLINE'}
+                        onChange={() => setMethod('ONLINE')}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div>
+                        <span className="font-bold text-sm text-slate-900 block">Online payment</span>
+                        <span className="text-xs text-slate-500">Credit / Debit card or PayNow (sandbox environment)</span>
+                      </div>
                     </label>
                   </fieldset>
+
                   {!info.eligibility.allowed && info.eligibility.reason === 'INSUFFICIENT_BALANCE' && (
-                    <p className="mt-2 text-sm text-amber-900">Your Education Account balance is not enough. You can pay online instead.</p>
+                    <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-900">
+                      Your Education Account balance is not enough. You can pay online instead.
+                    </div>
                   )}
-                  <Button className="mt-3" disabled={!method} onClick={() => setReview(true)}>
-                    Review payment
-                  </Button>
+
+                  <div className="mt-4 pt-3 border-t border-slate-100">
+                    <Button disabled={!method} onClick={() => setReview(true)}>
+                      Review payment
+                    </Button>
+                  </div>
                 </Card>
               ) : (
                 <Card title="Review and confirm">
-                  <p>
-                    Method: <strong>{method === 'EA' ? 'Education Account' : 'Online payment'}</strong>
-                  </p>
-                  <p>
-                    Amount: <strong>{formatSgd(info.totalCents)}</strong>
-                  </p>
-                  {error && (
-                    <p role="alert" className="mt-2 text-rose-700">
-                      {error}
+                  <div className="space-y-2 rounded-lg bg-slate-50 p-4 border border-slate-100 text-sm">
+                    <p>
+                      Method: <strong>{method === 'EA' ? 'Education Account' : 'Online payment'}</strong>
                     </p>
+                    <p>
+                      Amount: <strong>{formatSgd(info.totalCents)}</strong>
+                    </p>
+                  </div>
+
+                  {error && (
+                    <div role="alert" className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                      {error}
+                    </div>
                   )}
-                  <div className="mt-3 flex gap-2">
+
+                  <div className="mt-4 flex flex-wrap gap-2 pt-3 border-t border-slate-100">
                     <Button variant="secondary" disabled={busy} onClick={() => setReview(false)}>
                       Back
                     </Button>
                     <Button disabled={busy} onClick={() => void confirm()}>
-                      {busy ? 'Processing…' : `Confirm and pay ${formatSgd(info.totalCents)}`}
+                      {busy ? 'Processing settlement…' : `Confirm and pay ${formatSgd(info.totalCents)}`}
                     </Button>
                   </div>
                 </Card>
               )}
-              <Link className="text-indigo-700 underline" to={`/eservice/children/${child.personId}/charges`}>
-                Back to fees
-              </Link>
+
+              <div className="pt-2">
+                <Link className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1" to={`/eservice/children/${child.personId}/charges`}>
+                  Back to fees
+                </Link>
+              </div>
             </>
           );
         }}

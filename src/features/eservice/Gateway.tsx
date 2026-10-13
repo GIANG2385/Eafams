@@ -45,27 +45,44 @@ export function Gateway() {
         if (payment.status !== 'PENDING') return <Navigate to={`/eservice/receipt/${paymentId}`} replace />;
         return (
           <Card>
-            <p role="note" className="mb-3 rounded bg-sky-100 p-2 text-sm text-sky-950">
-              SANDBOX – no real payment is made
-            </p>
-            <IntegrationBadges items={['Payment gateway (sandbox)']} />
-            <h1 className="mt-3 text-xl font-semibold">Online payment</h1>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <span role="note" className="inline-flex items-center gap-1.5 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 border border-blue-200">
+                <span className="h-2 w-2 rounded-full bg-blue-600" />
+                SANDBOX ENVIRONMENT – Simulated Gateway
+              </span>
+              <IntegrationBadges items={['Payment gateway (sandbox)']} />
+            </div>
+
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Online Payment Gateway</h1>
             <PbiChip code="PB-11" check="success, failure, cancel and timeout never double-collect" />
-            <p className="text-sm">
-              Reference {payment.referenceNo} · {formatSgd(payment.totalCents)}
-            </p>
-            {error && <p role="alert" className="mt-2 text-rose-700">{error}</p>}
+
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-500 font-medium">Payment Reference</span>
+                <span className="font-mono font-bold text-slate-900">{payment.referenceNo}</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between border-t border-slate-200/80 pt-2 text-sm">
+                <span className="text-slate-500 font-medium">Settlement Amount</span>
+                <span className="text-lg font-bold text-blue-700 tabular-nums">{formatSgd(payment.totalCents)}</span>
+              </div>
+            </div>
+
+            {error && <div role="alert" className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</div>}
+
             {mode === 'ASK' ? (
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                <Button disabled={busy} onClick={() => void finish('SUCCEEDED')}>Simulate success</Button>
-                <Button variant="danger" disabled={busy} onClick={() => void finish('FAILED')}>Simulate failure</Button>
-                <Button variant="secondary" disabled={busy} onClick={() => void finish('CANCELLED')}>Cancel payment</Button>
-                <Button variant="secondary" disabled={busy} onClick={() => void finish('TIMEOUT')}>Simulate timeout</Button>
+              <div className="mt-5 space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Simulate Outcome</span>
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  <Button disabled={busy} onClick={() => void finish('SUCCEEDED')}>Simulate success</Button>
+                  <Button variant="danger" disabled={busy} onClick={() => void finish('FAILED')}>Simulate failure</Button>
+                  <Button variant="secondary" disabled={busy} onClick={() => void finish('CANCELLED')}>Cancel payment</Button>
+                  <Button variant="secondary" disabled={busy} onClick={() => void finish('TIMEOUT')}>Simulate timeout</Button>
+                </div>
               </div>
             ) : (
-              <div className="mt-4">
-                <p className="text-sm text-slate-600">Demo setting forces the result: {mode}</p>
-                <Button className="mt-2" disabled={busy} onClick={() => void finish()}>Pay now</Button>
+              <div className="mt-5 pt-3 border-t border-slate-100">
+                <p className="text-xs text-slate-500">Demo setting forces outcome: <strong>{mode}</strong></p>
+                <Button className="mt-3" disabled={busy} onClick={() => void finish()}>Pay now</Button>
               </div>
             )}
           </Card>

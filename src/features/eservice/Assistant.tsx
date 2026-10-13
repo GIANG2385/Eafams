@@ -41,18 +41,31 @@ export function Assistant() {
 
   if (!open) {
     return (
-      <Button className="fixed bottom-3 left-3 z-40 shadow" onClick={() => { announcePanelOpen('assistant'); setOpen(true); }}>
+      <Button
+        className="fixed bottom-4 left-4 z-40 shadow-md bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold"
+        onClick={() => {
+          announcePanelOpen('assistant');
+          setOpen(true);
+        }}
+      >
         Help assistant
       </Button>
     );
   }
   return (
-    <div role="dialog" aria-label="Help assistant" className="fixed bottom-3 left-3 z-40 flex h-96 w-80 flex-col rounded-lg border border-slate-400 bg-white shadow-lg">
-      <div className="flex items-center justify-between border-b p-2">
+    <div
+      role="dialog"
+      aria-label="Help assistant"
+      className="fixed bottom-4 left-4 z-40 flex h-96 w-80 flex-col rounded-xl border border-slate-300 bg-white shadow-2xl overflow-hidden"
+    >
+      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-3 py-2.5">
         <div>
-          <strong>Help assistant</strong> <Badge tone="blue">AI assistant (scripted)</Badge>
+          <strong className="text-sm font-bold text-slate-900">Help assistant</strong>{' '}
+          <Badge tone="blue">AI assistant (scripted)</Badge>
         </div>
-        <Button variant="secondary" onClick={() => setOpen(false)}>Close</Button>
+        <Button variant="secondary" className="text-xs px-2 py-0.5" onClick={() => setOpen(false)}>
+          Close
+        </Button>
       </div>
       <div role="log" aria-live="polite" className="flex-1 space-y-2 overflow-y-auto p-2 text-sm">
         {msgs.length === 0 && <p className="text-slate-600">Ask how to pay fees, view transactions or update your details.</p>}

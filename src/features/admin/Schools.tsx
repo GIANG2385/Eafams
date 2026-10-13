@@ -59,30 +59,41 @@ export function Schools() {
       {!canCreate && <p className="text-sm text-slate-600">School records are maintained by HQ. You can view your own school.</p>}
       <QueryState query={q} isEmpty={(d) => d.length === 0} emptyText="No schools.">
         {(rows) => (
-          <table className="w-full text-sm">
-            <thead><tr className="text-left text-slate-600"><th>Code</th><th>Name</th><th>Status</th><th /></tr></thead>
-            <tbody>
-              {rows.map((s) => (
-                <tr key={s.id} className="border-t border-slate-100">
-                  <td className="py-1">{s.code}</td>
-                  <td>{s.name}</td>
-                  <td><Badge tone={s.status === 'ACTIVE' ? 'green' : 'slate'}>{s.status === 'ACTIVE' ? 'Active' : 'Inactive'}</Badge></td>
-                  <td className="space-x-2 text-right">
-                    {can(actor, 'UPDATE', 'SCHOOL', s.id) && (
-                      <Button variant="secondary" aria-label={`Edit ${s.name}`} onClick={() => { setEditingId(s.id); setCode(s.code); setName(s.name); setError(''); }}>
-                        Edit
-                      </Button>
-                    )}
-                    {can(actor, 'DEACTIVATE', 'SCHOOL', s.id) && (
-                      <Button variant="secondary" onClick={() => void guard(() => setStatus(actor, 'SCHOOL', s.id, s.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'))}>
-                        {s.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                      </Button>
-                    )}
-                  </td>
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-200">
+                  <th className="py-2.5 px-3">Code</th>
+                  <th className="py-2.5 px-3">Name</th>
+                  <th className="py-2.5 px-3">Status</th>
+                  <th className="py-2.5 px-3 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {rows.map((s) => (
+                  <tr key={s.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-2.5 px-3 font-mono font-medium text-slate-900">{s.code}</td>
+                    <td className="py-2.5 px-3 font-semibold text-slate-800">{s.name}</td>
+                    <td className="py-2.5 px-3">
+                      <Badge tone={s.status === 'ACTIVE' ? 'green' : 'slate'}>{s.status === 'ACTIVE' ? 'Active' : 'Inactive'}</Badge>
+                    </td>
+                    <td className="py-2.5 px-3 space-x-2 text-right">
+                      {can(actor, 'UPDATE', 'SCHOOL', s.id) && (
+                        <Button variant="secondary" className="text-xs px-2.5 py-1" aria-label={`Edit ${s.name}`} onClick={() => { setEditingId(s.id); setCode(s.code); setName(s.name); setError(''); }}>
+                          Edit
+                        </Button>
+                      )}
+                      {can(actor, 'DEACTIVATE', 'SCHOOL', s.id) && (
+                        <Button variant="secondary" className="text-xs px-2.5 py-1" onClick={() => void guard(() => setStatus(actor, 'SCHOOL', s.id, s.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'))}>
+                          {s.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </QueryState>
       {canCreate && (

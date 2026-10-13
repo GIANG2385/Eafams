@@ -40,6 +40,11 @@ function Sel<T extends string>({
 }
 
 export function DemoControls() {
+  const isTest = import.meta.env.MODE === 'test';
+  if (!isTest) {
+    return null;
+  }
+
   const [open, setOpen] = useState(false);
   const [todayInput, setTodayInput] = useState('');
   const [fundsTo, setFundsTo] = useState('');
@@ -64,7 +69,14 @@ export function DemoControls() {
 
   if (!open) {
     return (
-      <Button variant="secondary" className="fixed bottom-3 right-3 z-50 shadow" onClick={() => { announcePanelOpen('demo'); setOpen(true); }}>
+      <Button
+        variant="secondary"
+        className="fixed bottom-4 right-4 z-50 shadow-md border-slate-300 bg-white/95 backdrop-blur text-xs font-semibold hover:border-blue-400"
+        onClick={() => {
+          announcePanelOpen('demo');
+          setOpen(true);
+        }}
+      >
         Demo controls
       </Button>
     );
@@ -73,11 +85,14 @@ export function DemoControls() {
     <section
       role="region"
       aria-label="Demo controls"
-      className="fixed bottom-3 right-3 z-50 max-h-[85vh] w-72 space-y-2 overflow-y-auto rounded-lg border border-slate-400 bg-white p-3 text-sm shadow-lg"
+      className="fixed bottom-4 right-4 z-50 max-h-[85vh] w-80 space-y-3 overflow-y-auto rounded-xl border border-slate-300 bg-white p-4 text-xs shadow-2xl"
     >
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold">Demo controls</h2>
-        <Button variant="secondary" onClick={() => setOpen(false)}>
+      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div>
+          <h2 className="font-bold text-sm text-slate-900">Demo controls</h2>
+          <span className="text-[10px] text-slate-400">Environment toggles</span>
+        </div>
+        <Button variant="secondary" className="text-xs px-2 py-0.5" onClick={() => setOpen(false)}>
           Hide
         </Button>
       </div>

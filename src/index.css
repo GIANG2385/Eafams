@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+
+  /* Refined focus ring defaults */
+  :focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
+
+  /* Tabular numbers for financial and date data */
+  table td,
+  table th {
+    font-variant-numeric: tabular-nums;
+  }
+}
