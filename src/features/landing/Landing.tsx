@@ -10,10 +10,10 @@ export function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
       {/* Top Navigation Bar */}
-      <header className="border-b border-slate-200/80 bg-white/90 backdrop-blur sticky top-0 z-40">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-40">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link to="/" className="hover:opacity-95 transition-opacity">
             <Logo size="sm" showSubtitle={false} />
           </Link>
@@ -35,68 +35,154 @@ export function Landing() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-12 sm:py-20">
-        {/* 1. Hero Section */}
-        <section className="text-center max-w-3xl mx-auto">
-          {/* Brand Crest */}
-          <div className="inline-flex items-center justify-center mb-6">
-            <Logo size="lg" showSubtitle={true} />
+      {/* Main Content Area */}
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:py-16 sm:px-6 flex-1 w-full">
+        {/* 1. Hero Section - Two Column Layout matching screenshot */}
+        <section className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          {/* Left Column: Copy & Actions */}
+          <div className="lg:col-span-7 flex flex-col items-start text-left">
+            {/* Overline / Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50/80 px-3 py-1 text-xs font-semibold text-rose-800 mb-6">
+              <span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse" />
+              <span>SPRINT 1 · DEMO PROTOTYPE</span>
+            </div>
+
+            {/* Tiêu đề */}
+            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight text-slate-950 leading-[1.15]">
+              Education accounts and school fees, in one place.
+            </h1>
+
+            {/* Phụ đề */}
+            <p className="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl">
+              Parents see balances and pay school fees. Schools and HQ manage students, accounts and fee batches. A clickable prototype of Sprint 1.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
+              {/* Nút chính */}
+              <Link
+                to="/signin"
+                aria-label="Sign in to prototype"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-bold text-white shadow-md hover:bg-blue-700 active:scale-[0.99] transition-all cursor-pointer"
+              >
+                <span>Sign in</span>
+                <span className="text-base">→</span>
+              </Link>
+
+              {/* Nút phụ */}
+              <button
+                type="button"
+                onClick={scrollToHowItWorks}
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-2xs hover:bg-slate-50 hover:border-slate-400 active:scale-[0.99] transition-all cursor-pointer"
+              >
+                See how it works
+              </button>
+            </div>
+
+            {/* Dòng nhỏ dưới nút */}
+            <p className="mt-4 text-xs font-medium text-slate-500">
+              Prototype with fictional data. No real accounts or payments.
+            </p>
           </div>
 
-          {/* Tiêu đề */}
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-950 leading-[1.15]">
-            Education accounts and school fees, in one place.
-          </h1>
+          {/* Right Column: Interactive Education Account Preview Card */}
+          <div className="lg:col-span-5 w-full">
+            <div className="relative mx-auto max-w-md rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xl shadow-slate-200/50">
+              {/* Card Ribbon / Top Bar */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-700 font-bold text-sm">
+                    AT
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Aiden Tan</h3>
+                    <p className="text-[11px] text-slate-500">Primary 4 • Pei Hwa Presbyterian</p>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 border border-emerald-200/60">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  SC Citizen
+                </span>
+              </div>
 
-          {/* Phụ đề */}
-          <p className="mt-4 sm:mt-5 text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            Parents see balances and pay school fees. Schools and HQ manage students, accounts and fee batches. A clickable prototype of Sprint 1.
-          </p>
+              {/* Balance Widget */}
+              <div className="mt-5 rounded-xl bg-gradient-to-br from-slate-900 to-blue-950 p-4 text-white">
+                <div className="flex items-center justify-between text-xs text-slate-300">
+                  <span>Available Education Account Balance</span>
+                  <span className="font-mono text-[10px] text-blue-300">EA-2024-8841</span>
+                </div>
+                <div className="mt-2 text-3xl font-extrabold tracking-tight">
+                  $1,450.00
+                </div>
+                <div className="mt-3 flex items-center justify-between pt-3 border-t border-slate-800 text-[11px]">
+                  <span className="text-emerald-400 font-medium">+$500.00 Annual Govt Top-up</span>
+                  <span className="text-slate-400">Edusave Eligible</span>
+                </div>
+              </div>
 
-          {/* Action Buttons */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-            {/* Nút chính */}
-            <Link
-              to="/signin"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-blue-700 active:scale-[0.99] transition-all cursor-pointer"
-            >
-              <span>Sign in</span>
-              <span>→</span>
-            </Link>
+              {/* Recent School Fee Charges Preview */}
+              <div className="mt-5 space-y-2.5">
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
+                  <span>Upcoming &amp; Recent Fee Charges</span>
+                  <span className="text-[10px] text-blue-600 font-normal">SingPass Settleable</span>
+                </div>
 
-            {/* Nút phụ */}
-            <button
-              type="button"
-              onClick={scrollToHowItWorks}
-              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-2xs hover:bg-slate-50 hover:border-slate-400 active:scale-[0.99] transition-all cursor-pointer"
-            >
-              See how it works
-            </button>
+                <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-semibold text-slate-800 block">Term 2 Learning Materials</span>
+                    <span className="text-[11px] text-slate-500">50% Govt Subsidy Applied</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-bold text-slate-900 block">$60.00</span>
+                    <span className="text-[10px] text-emerald-600 font-medium">Subsidized</span>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-3 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-semibold text-slate-800 block">Co-curricular Activity Fee</span>
+                    <span className="text-[11px] text-slate-500">School Sports &amp; Enrichment</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-bold text-slate-900 block">$35.00</span>
+                    <span className="text-[10px] text-amber-600 font-medium">Pending Review</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Footer Features */}
+              <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                <span className="flex items-center gap-1.5">
+                  <span className="text-rose-600 font-bold">●</span> SingPass Verified
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-blue-600 font-bold">●</span> Direct EA Deduction
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-emerald-600 font-bold">●</span> Instant Ledger Sync
+                </span>
+              </div>
+            </div>
           </div>
-
-          {/* Dòng nhỏ dưới nút */}
-          <p className="mt-4 text-xs font-medium text-slate-500">
-            Prototype with fictional data. No real accounts or payments.
-          </p>
         </section>
 
         {/* 2. Core Stakeholders & Roles */}
-        <section className="mt-16 sm:mt-24 pt-10 border-t border-slate-200">
+        <section className="mt-20 sm:mt-28 pt-12 border-t border-slate-200">
           <div className="text-center mb-10">
             <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Unified Architecture</span>
-            <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+            <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
               Built for all key educational stakeholders
             </h2>
-            <p className="text-xs text-slate-500 mt-1 max-w-lg mx-auto">
+            <p className="text-xs sm:text-sm text-slate-500 mt-2 max-w-lg mx-auto">
               Role-based interfaces designed for the complete tuition &amp; subsidy lifecycle.
             </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
             {/* Role 1: Parents */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs flex flex-col justify-between">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
               <div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 font-bold mb-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 text-xl font-bold mb-4">
                   👨‍👩‍👧
                 </div>
                 <h3 className="text-base font-bold text-slate-900">Parents &amp; Guardians</h3>
@@ -110,17 +196,17 @@ export function Landing() {
               <div className="mt-6 pt-4 border-t border-slate-100">
                 <Link
                   to="/signin"
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1"
                 >
-                  Access Parent Portal →
+                  Access Parent Portal <span>→</span>
                 </Link>
               </div>
             </div>
 
             {/* Role 2: Schools */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs flex flex-col justify-between">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
               <div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 font-bold mb-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-700 text-xl font-bold mb-4">
                   🏫
                 </div>
                 <h3 className="text-base font-bold text-slate-900">School Administrators</h3>
@@ -134,17 +220,17 @@ export function Landing() {
               <div className="mt-6 pt-4 border-t border-slate-100">
                 <Link
                   to="/signin"
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1"
                 >
-                  Access School Admin →
+                  Access School Admin <span>→</span>
                 </Link>
               </div>
             </div>
 
             {/* Role 3: Ministry HQ */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs flex flex-col justify-between">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
               <div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600 font-bold mb-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-purple-600 text-xl font-bold mb-4">
                   🏛️
                 </div>
                 <h3 className="text-base font-bold text-slate-900">Ministry HQ Officers</h3>
@@ -158,9 +244,9 @@ export function Landing() {
               <div className="mt-6 pt-4 border-t border-slate-100">
                 <Link
                   to="/signin"
-                  className="text-xs font-semibold text-purple-700 hover:text-purple-900 transition-colors"
+                  className="text-xs font-semibold text-purple-700 hover:text-purple-900 transition-colors inline-flex items-center gap-1"
                 >
-                  Access Ministry HQ →
+                  Access Ministry HQ <span>→</span>
                 </Link>
               </div>
             </div>
@@ -168,7 +254,7 @@ export function Landing() {
         </section>
 
         {/* 3. Phần 3: How It Works */}
-        <section id="how-it-works" className="mt-16 sm:mt-24 pt-12 border-t border-slate-200 scroll-mt-16">
+        <section id="how-it-works" className="mt-20 sm:mt-28 pt-12 border-t border-slate-200 scroll-mt-16">
           <div className="text-center mb-12">
             <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Sprint 1 Prototype</span>
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
@@ -271,7 +357,7 @@ export function Landing() {
 
       {/* Footer */}
       <footer className="mt-20 border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
-        <div className="mx-auto max-w-5xl px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Logo size="sm" showSubtitle={false} />
             <span className="text-slate-400">|</span>
